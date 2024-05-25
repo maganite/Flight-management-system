@@ -12,8 +12,6 @@ This project is a Flight Tracking and Simulation System built using Django. The 
 
 ## Architecture Overview
 
-![Architecture Diagram](https://drive.google.com/file/d/1BHzaZnbEwWG4AisyXphwTjqx39eel2lh/view?usp=sharing)
-
 The system architecture consists of the following components:
 
 - **Backend Server (Django)**: The central server that handles API requests, processes data, and communicates with other components.
