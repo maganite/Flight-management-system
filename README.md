@@ -1,67 +1,105 @@
-# Project Management
+# Flight Tracking and Simulation System
 
-## Setup
+## Description
 
-- Create virtual environment using
+This project is a Flight Tracking and Simulation System built using Django. The system integrates multiple components including a flight simulator, weather and GPS APIs, and a frontend map interface to provide real-time flight tracking and simulation capabilities.
 
-- Activate the envirnoment
+## Architecture Overview
 
-- Install local and base requeriements using
+The system architecture consists of the following components:
 
-```
-pip install -r requirements/base.txt
-```
+- **Backend Server (Django)**: The central server that handles API requests, processes data, and communicates with other components.
+- **Database (Postgres)**: Stores flight data and other relevant information.
+- **Flight Simulator**: Simulates flight data and sends updates to the backend server via webhooks.
+- **APIs (Weather, GPS)**: Provides real-time weather and GPS data.
+- **Frontend**: The user interface for displaying flight information.
+- **Map**: Visualizes flight paths and locations.
+- **Path Calculation Signal & Script**: Calculates flight paths based on current data.
 
-```
-pip install -r requirements/local.txt
-```
+## Prerequisites
 
-- Run migrations
+Before you begin, ensure you have the following software installed:
 
-```
-python manage.py makemigrations
-```
+- Python 3.x
+- Django
+- PostgreSQL
+- Git
 
-```
-python manage.py migrate --run-syncdb
-```
+## Setup Instructions
 
-- Start the server
-```
-python manage.py runserver
-```
+### Backend Server
 
-## Getting mock data
-- python manage.py create_users
-- python manage.py create_roles
-- python manage.py create_teams
-- python manage.py create_projects
-- python manage.py create_tasks
-- python manage.py create_budgets
+1. **Clone the Repository**
 
-## Getting app password 
-- Go To 'Manage Your Google Account' 
-- Go to security tab 
-- Then you will find a section 'How you sign in to Google'
-- If 2-factor authentication is off, turn it on
-- Then click on 2-Steps Verification and scroll to bottom 
-- There you will find 'App Passwords'
-- click on that and add an app password
-- There in select app, you have to select Mail and in select device choice your device
-- Once you generate a password, you can create a .env file in project's root directory
+    ```bash
+    git clone https://github.com/your-username/flight-management-system.git
+    cd flight-management-system
+    ```
 
-```
-EMAIL_HOST_USER="YOUR_GMAIL_ID"
-EMAIL_HOST_PASSWORD="GENERATED_APP_PASSWORD"
-```
+2. **Create a Virtual Environment**
 
-## Getting up redis for celery queue
-- https://redis.io/docs/getting-started/installation/install-redis-on-windows/
+    ```bash
+    python3 -m venv venv
+    source venv/bin/activate
+    ```
 
-## Running celery
+3. **Install Backend Dependencies**
 
-celery -A config worker -E --concurrency=4 -l info
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-## References 
-- https://appseed.us/
-- https://github.com/cookiecutter/cookiecutter
+4. **Setup PostgreSQL Database**
+
+    - Install PostgreSQL if not already installed.
+    - Create a new database and user.
+    - Update `DATABASES` settings in `settings.py` with your database credentials.
+
+5. **Apply Migrations**
+
+    ```bash
+    python manage.py migrate
+    ```
+
+6. **Run the Development Server**
+
+    ```bash
+    python manage.py runserver
+    ```
+
+
+### Path Calculation Script
+
+1. **Configure the Path Calculation Script**
+
+    Ensure the script is configured to trigger on flight location updates and is properly connected to the backend server.
+
+## Usage
+
+1. **Access the Frontend**
+
+    Open your web browser and navigate to `http://localhost:3000` to access the frontend interface.
+
+2. **Simulate a Flight**
+
+    Use the flight simulator to start a flight simulation. The backend server will receive updates and process them accordingly.
+
+3. **View Flight Path**
+
+    The frontend map will visualize the flight path and provide real-time updates based on the data received from the backend server.
+
+## Contributing
+
+We welcome contributions! Please read our [Contributing Guidelines](CONTRIBUTING.md) for more information on how to get started.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Contact
+
+If you have any questions or need further assistance, feel free to contact us at [your-email@example.com].
+
+---
+
+Thank you for using our Flight Tracking and Simulation System! We hope it meets your needs and provides a great experience.
