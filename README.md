@@ -1,5 +1,11 @@
 # Flight Tracking and Simulation System
 
+## DEMO
+http://65.2.33.151/map/flight/
+
+## Presentation Link
+https://docs.google.com/presentation/d/1b_sVmlZYddoggQpvpvYsnxvN7H_mWl6VAHr0RxvzuEM/edit?usp=sharing
+
 ## Description
 
 This project is a Flight Tracking and Simulation System built using Django. The system integrates multiple components including a flight simulator, weather and GPS APIs, and a frontend map interface to provide real-time flight tracking and simulation capabilities.
