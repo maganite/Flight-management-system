@@ -1,0 +1,111 @@
+{% extends 'layouts/base.html' %}
+{% load static %}  
+
+{% block content %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+<style>
+    #mapid { height: 80vh; }
+    .table-custom { width: 100%; border-collapse: collapse; }
+    .table-custom th, .table-custom td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    .table-custom th { background-color: #f2f2f2; }
+    .btn-view-map { background-color: #04a9f5; color: white; border: none; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 2px; cursor: pointer; border-radius: 8px; }
+</style>
+<div class="container">
+    <div class="row justify-content-between align-items-center">
+        <div class="col-md">
+            <div class="page-header">
+                <div class="page-block">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <div class="page-header-title">
+                                <h5 class="m-b-10">Airport Data</h5>
+                            </div>
+                            <ul class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}"><i class="feather icon-home"></i></a></li>
+                                <li class="breadcrumb-item"><a href="#">Airport Data</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-12">
+        <div class="card">
+            <table id="airportTable" class="table-custom">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Latitude</th>
+                        <th>Longitude</th>
+                        <th>View on Map</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data will be filled by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+    let mymap;
+    let marker;
+
+    fetch('/map/api/airports/')
+        .then(response => response.json())
+        .then(data => {
+            const tableBody = document.getElementById('airportTable').getElementsByTagName('tbody')[0];
+            data.forEach(airport => {
+                let row = tableBody.insertRow();
+                let cellId = row.insertCell(0);
+                let cellName = row.insertCell(1);
+                let cellLat = row.insertCell(2);
+                let cellLon = row.insertCell(3);
+                let cellView = row.insertCell(4);
+                cellId.innerHTML = airport.id;
+                cellName.innerHTML = airport.name;
+                cellLat.innerHTML = airport.lat;
+                cellLon.innerHTML = airport.lon;
+                cellView.innerHTML = `<a href="{% url 'map:single_flight_map' %}?lat=${airport.lat}&lon=${airport.lon}&name=${encodeURIComponent(airport.name)}" class="btn-view-map">View on Map</a>`;
+                // cellView.innerHTML = `<button class="btn-view-map" onclick="showOnMap(${airport.lat}, ${airport.lon}, '${airport.name.replace(/'/g, "\\'")}')">View on Map</button>`;
+            });
+        });
+
+    function showOnMap(lat, lon, name) {
+        var mapContainer = document.getElementById('mapid');
+        if (!mapContainer) {
+            mapContainer = document.createElement('div');
+            mapContainer.id = 'mapid';
+            mapContainer.style.height = '80vh';
+            document.querySelector('.container').appendChild(mapContainer);
+
+            mymap = L.map('mapid', {
+                center: [37.7749, -122.4194],
+                zoom: 2,
+                minZoom: 3
+            });
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 18,
+                attribution: '© OpenStreetMap'
+            }).addTo(mymap);
+        }
+
+        if (marker) {
+            mymap.removeLayer(marker);
+        }
+
+        mymap.setView([lat, lon], 10);
+        marker = L.marker([lat, lon]).addTo(mymap);
+        marker.bindPopup(name).openPopup();
+    }
+</script>
+
+{% endblock content %}
+

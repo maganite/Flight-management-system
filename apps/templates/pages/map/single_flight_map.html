@@ -1,0 +1,33 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+<style>
+    #mapid { height: 80vh; }
+</style>
+<div class="container">
+    <div id="mapid"></div>
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const lat = parseFloat(urlParams.get('lat'));
+        const lon = parseFloat(urlParams.get('lon'));
+        const name = urlParams.get('name');
+
+        var mymap = L.map('mapid').setView([lat, lon], 10);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: '© OpenStreetMap'
+        }).addTo(mymap);
+
+        var marker = L.marker([lat, lon]).addTo(mymap);
+        marker.bindPopup(name).openPopup();
+    });
+</script>
+
+{% endblock content %}

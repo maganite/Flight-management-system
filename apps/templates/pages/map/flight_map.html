@@ -1,0 +1,203 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<style>
+    #mapid { height: 80vh; }
+</style>
+<div class="container">
+    <div class="row justify-content-between align-items-center">
+        <!-- Page Header on the left -->
+        <div class="col-md">
+            <div class="page-header">
+                <div class="page-block">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <div class="page-header-title">
+                                <h5 class="m-b-10">Map</h5>
+                            </div>
+                            <ul class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}"><i class="feather icon-home"></i></a></li>
+                                <li class="breadcrumb-item"><a href="#">map</a></li>
+                                <li class="breadcrumb-item"><a href="javascript:"></a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Display success or error messages -->
+    {% if error_message %}
+    <div class="alert alert-danger" role="alert">
+        {{ error_message }}
+    </div>
+    {% elif success_message %}
+    <div class="alert alert-success" role="alert">
+        {{ success_message }}
+    </div>
+    {% endif %}
+
+    <div class="col-sm-12">
+        <div class="card">
+            <div id="mapid"></div>
+        </div>
+    </div>
+</div>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+    var mymap = L.map('mapid', {
+        center: [37.7749, -122.4194],
+        zoom: 2,
+        minZoom: 3
+    });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        attribution: '© OpenStreetMap'
+    }).addTo(mymap);
+
+    // Fetch and visualize weather conditions
+    fetch('/map/api/weather/')
+        .then(response => response.json())
+        .then(data => {
+            data.forEach(item => {
+                var circle = L.circle([item.lat, item.lon], {
+                    color: item.severity === 'high' ? 'red' : 'green',
+                    fillColor: item.severity === 'high' ? '#f03' : '#008000',
+                    fillOpacity: 0.5,
+                    radius: item.radius
+                }).addTo(mymap);
+                circle.on('click', function(e) {
+                    L.popup()
+                        .setLatLng(e.latlng)
+                        .setContent(`Latitude: ${item.lat}, Longitude: ${item.lon}, Condition: ${item.condition}, Severity: ${item.severity}`)
+                        .openOn(mymap);
+                });
+            });
+        });
+
+    // Fetch and visualize GPS loss areas
+    fetch('/map/api/gpsloss/')
+        .then(response => response.json())
+        .then(data => {
+            data.forEach(item => {
+                var circle = L.circle([item.lat, item.lon], {
+                    color: 'gray',
+                    fillColor: '#9c9c9c',
+                    fillOpacity: 0.5,
+                    radius: item.radius
+                }).addTo(mymap);
+                circle.on('click', function(e) {
+                    L.popup()
+                        .setLatLng(e.latlng)
+                        .setContent(`GPS Loss: ${item.description}`)
+                        .openOn(mymap);
+                });
+            });
+        });
+
+    // Fetch and visualize volcanic ash clouds
+    fetch('/map/api/volcanic_ash/')
+    .then(response => response.json())
+    .then(data => {
+        data.forEach(cloud => {
+            var latlngs = cloud.points.map(point => [point.lat, point.lon]);
+            var polygon = L.polygon(latlngs, {color: 'gray', fillColor: '#9c9c9c', fillOpacity: 0.5}).addTo(mymap);
+            polygon.on('click', function(e) {
+                L.popup()
+                    .setLatLng(e.latlng)
+                    .setContent(`Volcanic Ash Cloud from ${cloud.name}: ${cloud.description}`)
+                    .openOn(mymap);
+            });
+        });
+    });
+
+    // Fetch and visualize flight paths
+    fetch('/map/api/flight_paths/')
+        .then(response => response.json())
+        .then(data => {
+            data.forEach(flight => {
+                var polyline = L.polyline(flight.path.map(p => [p.lat, p.lon]), {
+                    color: 'green',
+                    dashArray: '5, 10'  // This creates the dotted line effect
+                }).addTo(mymap);
+                polyline.on('click', function(e) {
+                    L.popup()
+                        .setLatLng(e.latlng)
+                        .setContent(`Flight ID: ${flight.flight_id}`)
+                        .openOn(mymap);
+                });
+            });
+        });
+
+    // Function to update flight paths and positions
+    function updateFlights() {
+        fetch('/map/api/flight_paths/')
+            .then(response => response.json())
+            .then(data => {
+                mymap.eachLayer(function (layer) {  // Remove existing markers and polylines
+                    if (layer instanceof L.Marker || layer instanceof L.Polyline) {
+                        mymap.removeLayer(layer);
+                    }
+                });
+                data.forEach(flight => {
+                    var polyline = L.polyline(flight.path.map(p => [p.lat, p.lon]), {
+                        color: 'green',
+                        dashArray: '5, 10'  // This creates the dotted line effect
+                    }).addTo(mymap);
+                    polyline.on('mouseover', function(e) {
+                        L.popup()
+                            .setLatLng(e.latlng)
+                            .setContent(`Efficiency: ${flight.path_efficiency}`)
+                            .openOn(mymap);
+                    });
+                });
+            });
+    }
+    updateFlights();
+
+    var marker; // Declare marker variable outside the function to maintain its reference
+
+    function getCurrentPosition(){
+        fetch('/map/api/flight_positions/1/')
+        .then(response => response.json())
+        .then(data => {
+            if(data.length !== 0){
+                console.log(data);
+                var icon = L.icon({
+                    iconUrl: 'https://icons.veryicon.com/png/o/leisure/vajra-district_-tourism/flight-18.png',
+                    iconSize: [24, 24]
+                });
+
+                // Check if a marker already exists and remove it
+                if (marker) {
+                    mymap.removeLayer(marker);
+                }
+
+                // Create a new marker and add it to the map
+                marker = L.marker(data.current_gps, {icon: icon}).addTo(mymap);
+                marker.on('click', function(e) {
+                    L.popup()
+                    .setLatLng(e.latlng)
+                    .setContent(`Flight Sensor Data -> Altitude: ${data.current_altitude}, Speed: ${data.current_speed}, Fuel-left: ${data.metadata.fuel_level}, Engine Efficiency: ${data.metadata.engine_temp}`)
+                    .openOn(mymap);
+                });
+            }
+        });
+    }
+    setInterval(getCurrentPosition, 1000);
+
+    {% comment %} mymap.on('click', function(e) {
+        // Get the coordinates of the point where the map was clicked
+        var lat = e.latlng.lat;
+        var lng = e.latlng.lng;
+    
+        // Alert the coordinates
+        alert("Latitude: " + lat + "\nLongitude: " + lng);
+    }); {% endcomment %}
+</script>
+{% endblock content %}
+
