@@ -12,7 +12,7 @@ This project is a Flight Tracking and Simulation System built using Django. The 
 
 ## Architecture Overview
 
-![Architecture Diagram](/media/unkn0wn1/New Volume/Flight-management-system/apps/static/assets/images/WhatsApp Image 2024-05-25 at 16.27.50.jpeg)
+![Architecture Diagram](https://drive.google.com/file/d/1BHzaZnbEwWG4AisyXphwTjqx39eel2lh/view?usp=sharing)
 
 The system architecture consists of the following components:
 
